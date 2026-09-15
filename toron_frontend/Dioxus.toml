@@ -1,0 +1,10 @@
+[application]
+name = "toron_frontend"
+default_platform = "web"
+
+[web.app]
+title = "Toron"
+
+[web.watcher]
+reload_html = true
+watch_path = ["src", "assets"]

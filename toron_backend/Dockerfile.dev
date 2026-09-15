@@ -1,0 +1,30 @@
+# ==============================================================================
+# Development Dockerfile for Toron Backend (Axum + cargo-watch)
+# ==============================================================================
+FROM rust:1-slim-bookworm
+
+WORKDIR /app
+
+# Install build dependencies and tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install cargo-watch for fast incremental re-compilation
+RUN cargo install cargo-watch --locked
+
+# Pre-cache dependencies
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build && rm -rf src
+
+# Copy source code
+COPY src ./src
+
+EXPOSE 3000
+
+ENV RUST_LOG=debug
+
+CMD ["cargo", "watch", "-x", "run"]

@@ -1,0 +1,12 @@
+[package]
+name = "toron_backend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.9"
+dotenvy = "0.15.7"
+serde = "1.0.229"
+serde_json = "1.0.151"
+sqlx = "0.9.0"
+tokio = "1.53.1"

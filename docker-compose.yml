@@ -1,0 +1,84 @@
+services:
+  # ============================================================================
+  # PostgreSQL Database (Source of truth & logical replication provider)
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: toron-postgres
+    restart: unless-stopped
+    command: ["postgres", "-c", "wal_level=logical"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-toron}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-toron}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # PowerSync Service (Real-time sync stream coordinator)
+  # ============================================================================
+  powersync:
+    image: journeyapps/powersync-service:latest
+    container_name: toron-powersync
+    restart: unless-stopped
+    command: ["start", "-r", "unified"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POWERSYNC_CONFIG_PATH: /config/powersync.yaml
+      PS_DATA_SOURCE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-toron}
+      PS_STORAGE_SOURCE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-toron}
+      PS_PORT: 8080
+      JWKS_URI: ${JWKS_URI:-http://backend:3000/.well-known/jwks.json}
+    volumes:
+      - ./powersync/powersync.yaml:/config/powersync.yaml:ro
+      - ./powersync/sync_rules.yaml:/config/sync_rules.yaml:ro
+    ports:
+      - "${POWERSYNC_PORT:-8080}:8080"
+
+  # ============================================================================
+  # Toron Backend (Rust / Axum REST & Auth API)
+  # ============================================================================
+  backend:
+    build:
+      context: ./toron_backend
+      dockerfile: Dockerfile
+    container_name: toron-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-toron}
+      PORT: ${BACKEND_PORT:-3000}
+      RUST_LOG: ${RUST_LOG:-info}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+
+  # ============================================================================
+  # Toron Frontend (Rust / Dioxus Web UI & Nginx Reverse Proxy)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./toron_frontend
+      dockerfile: Dockerfile
+    container_name: toron-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - powersync
+    ports:
+      - "${FRONTEND_PORT:-8000}:80"
+
+volumes:
+  pg_data:
+    name: toron_pg_data

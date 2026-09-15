@@ -1,0 +1,33 @@
+# ==============================================================================
+# Development Dockerfile for Toron Frontend (Dioxus CLI + Dev Server)
+# ==============================================================================
+FROM rust:1-slim-bookworm
+
+WORKDIR /app
+
+# Install build dependencies and tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    curl \
+    binaryen \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add WebAssembly compilation target
+RUN rustup target add wasm32-unknown-unknown
+
+# Install dioxus-cli via cargo-binstall for fast setup
+RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall.sh | bash \
+    && cargo binstall --no-confirm dioxus-cli
+
+# Pre-cache dependencies
+COPY Cargo.toml Cargo.lock ./
+COPY Dioxus.toml ./
+
+# Copy source code and assets
+COPY src ./src
+COPY assets* ./assets/
+
+EXPOSE 8080
+
+CMD ["dx", "serve", "--platform", "web", "--addr", "0.0.0.0", "--port", "8080"]

@@ -1,0 +1,8 @@
+[package]
+name = "toron_frontend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+powersync = "0.0.7"
+rusqlite = "0.39.0"

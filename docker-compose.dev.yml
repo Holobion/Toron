@@ -1,0 +1,68 @@
+services:
+  # ============================================================================
+  # PostgreSQL Database (Sync on schema changes)
+  # ============================================================================
+  postgres:
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./init-db
+          target: /docker-entrypoint-initdb.d
+
+  # ============================================================================
+  # PowerSync Service (Sync on config & rules changes)
+  # ============================================================================
+  powersync:
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./powersync/powersync.yaml
+          target: /config/powersync.yaml
+        - action: sync+restart
+          path: ./powersync/sync_rules.yaml
+          target: /config/sync_rules.yaml
+
+  # ============================================================================
+  # Toron Backend (Incremental compilation with cargo-watch & Compose watch)
+  # ============================================================================
+  backend:
+    build:
+      context: ./toron_backend
+      dockerfile: Dockerfile.dev
+    environment:
+      RUST_LOG: ${RUST_LOG:-debug}
+    develop:
+      watch:
+        - action: sync
+          path: ./toron_backend/src
+          target: /app/src
+        - action: rebuild
+          path: ./toron_backend/Cargo.toml
+        - action: rebuild
+          path: ./toron_backend/Cargo.lock
+        - action: rebuild
+          path: ./toron_backend/Dockerfile.dev
+
+  # ============================================================================
+  # Toron Frontend (Dioxus CLI dev server & hot reloading)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./toron_frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${FRONTEND_DEV_PORT:-8080}:8080"
+    develop:
+      watch:
+        - action: sync
+          path: ./toron_frontend/src
+          target: /app/src
+        - action: sync
+          path: ./toron_frontend/Dioxus.toml
+          target: /app/Dioxus.toml
+        - action: rebuild
+          path: ./toron_frontend/Cargo.toml
+        - action: rebuild
+          path: ./toron_frontend/Cargo.lock
+        - action: rebuild
+          path: ./toron_frontend/Dockerfile.dev
