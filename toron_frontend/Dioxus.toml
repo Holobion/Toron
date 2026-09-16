@@ -1,10 +1,21 @@
 [application]
-name = "toron_frontend"
-default_platform = "web"
 
 [web.app]
-title = "Toron"
 
-[web.watcher]
-reload_html = true
-watch_path = ["src", "assets"]
+# HTML title tag content
+title = "toron_frontend"
+
+# include `assets` in web platform
+[web.resource]
+
+# Additional CSS style files
+style = []
+
+# Additional JavaScript files
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []

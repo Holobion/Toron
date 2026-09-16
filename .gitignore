@@ -1,0 +1,20 @@
+# Rust
+**/target/
+**/*.rs.bk
+Cargo.lock
+
+# Environment & local settings
+.env
+.env.local
+.env.*.local
+
+# Database & sync storage
+postgres_data/
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
