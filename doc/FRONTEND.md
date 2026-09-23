@@ -1,6 +1,6 @@
-## Frontend development
+# Frontend development
 
-### Prerequisites
+## Prerequisites
 
 For standalone frontend development, install:
 
@@ -14,7 +14,7 @@ From the repository root, enter the frontend directory:
 cd toron_frontend
 ```
 
-### Run the frontend locally
+## Run the frontend locally
 
 Start the Dioxus web development server with live reload:
 
@@ -26,7 +26,7 @@ The application is available at `http://localhost:8080` by default. To bind
 the server to another interface or port, use the corresponding Dioxus CLI
 options. The web platform is selected by default through `Cargo.toml`.
 
-### Validate frontend changes
+## Validate frontend changes
 
 Run formatting, unit tests and compilation checks from `toron_frontend`:
 
@@ -39,7 +39,7 @@ cargo check
 The task service tests use the in-memory repository and do not require the
 backend, PostgreSQL or PowerSync services.
 
-### Run the Docker development environment
+## Run the Docker development environment
 
 From the repository root, copy the environment template if needed:
 
@@ -58,7 +58,7 @@ changes to `toron_frontend/src`, `Dioxus.toml` and its Cargo manifests. The
 other services are started alongside it so backend and sync integration can be
 tested through the reverse proxy.
 
-### Build and run the production frontend
+## Build and run the production frontend
 
 Build the frontend image from the repository root:
 
