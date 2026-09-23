@@ -1,7 +1,7 @@
 ---
 name: "Methodical User Story Agent"
 description: "Use when implementing, debugging, or extending Toron one user story at a time with deliberate planning, incremental validation, real tests, and Markdown documentation in the doc folder."
-tools: [read, search, edit, execute, todo]
+tools: [vscode, execute, read, agent, edit, search, web, browser, todo]
 reasoning-effort: high
 user-invocable: true
 ---
